@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="20dp"
-    android:paddingTop="10dp"
-    android:paddingEnd="20dp">
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent">
+    android:paddingStart="24dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="24dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -22,14 +16,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:barrierDirection="end"
-                app:barrierMargin="10dp"
+                app:barrierMargin="8dp"
                 app:constraint_referenced_ids="text_view_version, text_view_author, text_view_launcher, text_view_copyright, text_view_logo, text_view_gl_info" />
 
             <TextView
                 android:id="@+id/text_view_version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:text="@string/view_version"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -46,7 +39,7 @@
                 android:id="@+id/text_view_author"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginTop="4dp"
                 android:text="@string/view_author"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/info_version" />
@@ -64,7 +57,7 @@
                 android:id="@+id/text_view_launcher"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginTop="4dp"
                 android:text="@string/view_launcher"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/text_info_author" />
@@ -82,7 +75,7 @@
                 android:id="@+id/text_view_copyright"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginTop="4dp"
                 android:text="@string/view_copyright"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/text_info_launcher" />
@@ -100,7 +93,7 @@
                 android:id="@+id/text_view_logo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginTop="4dp"
                 android:text="@string/view_logo"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/text_info_copyright" />
@@ -117,7 +110,7 @@
                 android:id="@+id/text_view_gl_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginTop="4dp"
                 android:text="@string/info_mg_info"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/text_info_logo" />
@@ -143,5 +136,3 @@
 
 
     </ScrollView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
