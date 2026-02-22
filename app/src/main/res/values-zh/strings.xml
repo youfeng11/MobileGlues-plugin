@@ -100,7 +100,6 @@
 
     <string name="info_mg_info">MobileGlues 信息</string>
     <string name="button_view_gl_info">查看</string>
-    <string name="loading">加载中…</string>
     <string name="dialog_mg_gl_info_title">MobileGlues 信息</string>
     <string name="dismiss">关闭</string>
 </resources>

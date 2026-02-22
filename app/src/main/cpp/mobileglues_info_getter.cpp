@@ -196,7 +196,7 @@ static std::string create_context_and_query() {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_fcl_plugin_mobileglues_MGGLInfoDialogBuilder_getMobileGluesGLInfo(JNIEnv *env,
+Java_com_fcl_plugin_mobileglues_MGInfoGetter_getMobileGluesGLInfo(JNIEnv *env,
                                                                           jobject thiz) {
     std::string res = create_context_and_query();
     printf("MobileGlues GL Info: \n%s", res.c_str());
@@ -212,7 +212,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_fcl_plugin_mobileglues_MGGLInfoDialogBuilder_setenv(JNIEnv *env, jobject thiz, jstring key,
+Java_com_fcl_plugin_mobileglues_MGInfoGetter_setenv(JNIEnv *env, jobject thiz, jstring key,
                                                              jstring value, jint overwrite) {
     const char* k = env->GetStringUTFChars(key, nullptr);
     const char* v = env->GetStringUTFChars(value, nullptr);

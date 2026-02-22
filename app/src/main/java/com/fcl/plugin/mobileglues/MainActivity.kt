@@ -270,7 +270,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_about -> {
-                AppInfoDialogBuilder(this, config).showDialog()
+                showAppInfoDialog(this, config)
                 true
             }
 

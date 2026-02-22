@@ -102,7 +102,6 @@ Please note, this action is <b><font color="@colorError">irreversible</font></b>
     <string name="exit">Exit</string>
     <string name="info_mg_info">MobileGlues Info</string>
     <string name="button_view_gl_info">Check</string>
-    <string name="loading">Loading…</string>
     <string name="dialog_mg_gl_info_title">MobileGlues Info</string>
     <string name="dismiss">Dismiss</string>
 </resources>
