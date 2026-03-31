@@ -66,6 +66,8 @@
     <string name="dialog_permission_msg">你似乎禁止了授权请求。修改配置需要“存储”权限，你必须在授权后才能修改渲染器设置。</string>
     <string name="dialog_permission_msg_android_Q">修改渲染选项需要“所有文件访问权限”，请在接下来的页面中授予此权限以允许应用访问：\n%s</string>
 
+    <string name="permission_failed">授权失败</string>
+
     <string name="dialog_title_warning">警告</string>
     <string name="warning_ext_cs_enable">启用不完整的 ARB_compute_shader 扩展可能会导致部分光影、Mods 错误，是否继续？</string>
     <string name="warning_adreno_740_angle">在 Adreno 740 设备上启用 ANGLE 极有可能导致严重渲染错误，是否继续？</string>
@@ -81,8 +83,7 @@
     <string name="remove_mg_files_message"><![CDATA[此操作将彻底删除与 MobileGlues 相关的所有文件。具体包括：<br/><br/>
  • <b>所有配置文件：</b> 任何您自定义的设置、偏好选项以及可能的应用运行所需的配置文件将被移除。<br/>
  • <b>缓存文件：</b> MobileGlues 运行时生成的 GLSL 缓存（用于加快加载速度）将被清空。<br/>
- • <b>日志文件：</b> MobileGlues 运行过程中产生的日志文件将被删除。<br/>
- • <b>文件夹访问权限：</b> MobileGlues 应用当前拥有的对设备存储空间中特定文件夹的读写访问权限将被撤销。<br/><br/>
+ • <b>日志文件：</b> MobileGlues 运行过程中产生的日志文件将被删除。<br/><br/>
 请注意，此操作是<b><font color="@colorError">不可逆</font></b>的。 一旦您点击“确定”，上述所有文件将被永久删除，无法恢复。如果您在未来要重新使用 MobileGlues，您将需要重新配置 MobileGlues。<br/><br/>
 <b><font color="@colorError">确定要继续吗？</font></b>]]></string>
     <string name="ok">确定</string>
