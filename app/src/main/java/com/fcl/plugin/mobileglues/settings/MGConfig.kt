@@ -1,12 +1,8 @@
 package com.fcl.plugin.mobileglues.settings
 
 import android.content.Context
-import android.os.Build
-import android.os.Environment
-import android.provider.DocumentsContract
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.fcl.plugin.mobileglues.MainActivity
 import com.fcl.plugin.mobileglues.utils.Constants
 import com.fcl.plugin.mobileglues.utils.FileUtils
 import com.google.gson.Gson
@@ -19,7 +15,7 @@ import java.io.IOException
 import java.nio.file.Files
 import kotlin.properties.Delegates
 
-data class MGConfig(val context: Context) {
+class MGConfig(val context: Context) {
     // 使用 Delegates.observable 委托属性
     var enableANGLE: Int by Delegates.observable(1) { _, old, new -> if (old != new) save() }
     var enableNoError: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
@@ -38,29 +34,19 @@ data class MGConfig(val context: Context) {
     var fsr1Setting: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
 
     companion object {
-        public var cacheConfigPath: String? = null
-        public var cacheMGDir: File = File("")
+        var cacheConfigPath: String? = null
+        var cacheMGDir: File = File("")
 
         fun loadConfig(context: Context): MGConfig? {
             val configStr: String = try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MainActivity.MGDirectoryUri?.let { uri ->
-                        val configUri = DocumentsContract.buildDocumentUriUsingTree(
-                            uri,
-                            DocumentsContract.getTreeDocumentId(uri) + "/config.json"
-                        )
-                        FileUtils.readText(context, configUri)
-                    } ?: return null
-                } else {
-                    val configFile = File(Constants.CONFIG_FILE_PATH)
-                    if (!Files.exists(configFile.toPath())) return null
-                    FileUtils.readText(configFile)
-                }
+                val configFile = File(Constants.CONFIG_FILE_PATH)
+                if (!Files.exists(configFile.toPath())) return null
+                FileUtils.readText(configFile)
             } catch (_: Exception) {
                 return null
             }
 
-            val config = MGConfig(context) // 使用修改后的构造函数
+            val config = MGConfig(context)
             try {
                 // 将从文件读取的配置赋值给新创建的 config 对象
                 Gson().fromJson(configStr, JsonObject::class.java).apply {
@@ -89,38 +75,18 @@ data class MGConfig(val context: Context) {
         }
     }
 
-    // 省略 saveConfig 和 save 方法，因为 observable 委托会直接调用 save(context)
-    // 另外，Data Class 的特性不再适用，因为属性委托会改变属性的 getter/setter
-    // 所以我将 data class 关键字移除，并修改了构造函数来接收 Context
-
     fun deleteConfig() {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                MainActivity.MGDirectoryUri?.let {
-                    FileUtils.deleteFileViaSAF(context, it, "config.json")
-                }
-            } else {
-                val configFile = File(Environment.getExternalStorageDirectory(), "MG/config.json")
-                if (configFile.exists()) FileUtils.deleteFile(configFile)
-            }
+            val configFile = File(Constants.CONFIG_FILE_PATH)
+            if (configFile.exists()) FileUtils.deleteFile(configFile)
         } catch (_: Exception) {
         }
     }
 
     private fun clearCacheFile() {
-        (context as LifecycleOwner).lifecycleScope.launch(Dispatchers.IO) {
+        (context as? LifecycleOwner)?.lifecycleScope?.launch(Dispatchers.IO) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val uri = DocumentsContract.buildDocumentUriUsingTree(
-                        MainActivity.MGDirectoryUri,
-                        DocumentsContract.getTreeDocumentId(MainActivity.MGDirectoryUri) + "/glsl_cache.tmp"
-                    )
-                    context.contentResolver?.let {
-                        DocumentsContract.deleteDocument(it, uri)
-                    }
-                } else {
-                    FileUtils.deleteFile(File(Constants.GLSL_CACHE_FILE_PATH))
-                }
+                FileUtils.deleteFile(File(Constants.GLSL_CACHE_FILE_PATH))
             } catch (_: Exception) {
             }
         }
@@ -129,15 +95,16 @@ data class MGConfig(val context: Context) {
     @Throws(IOException::class)
     fun save() {
         val configMap = buildConfigMap()
-
         val configStr = Gson().toJson(configMap)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val uri = MainActivity.MGDirectoryUri
-                ?: throw IOException("SAF directory not selected")
-            FileUtils.writeText(context, uri, "config.json", configStr, "application/json")
-        } else {
-            FileUtils.writeText(File(Constants.CONFIG_FILE_PATH), configStr)
+        val configFile = File(Constants.CONFIG_FILE_PATH)
+        
+        // 确保目录存在
+        val parent = configFile.parentFile
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs()
         }
+        
+        FileUtils.writeText(configFile, configStr)
     }
 
     fun saveToCachePath() {

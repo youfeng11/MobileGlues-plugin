@@ -13,7 +13,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Environment
-import android.provider.DocumentsContract
 import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
@@ -39,10 +38,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import com.fcl.plugin.mobileglues.databinding.ActivityMainBinding
-import com.fcl.plugin.mobileglues.settings.FolderPermissionManager
 import com.fcl.plugin.mobileglues.settings.MGConfig
 import com.fcl.plugin.mobileglues.utils.Constants
 import com.fcl.plugin.mobileglues.utils.FileUtils
@@ -77,47 +74,16 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
 
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private var config: MGConfig? = null
-    private lateinit var folderPermissionManager: FolderPermissionManager
     private var isSpinnerInitialized = false
 
-    // 使用 Activity Result API 替代 onActivityResult
-    private val safLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                result.data?.data?.let { treeUri ->
-                    if (!folderPermissionManager.isUriMatchingFilePath(
-                            treeUri,
-                            File(Constants.MG_DIRECTORY)
-                        )
-                    ) {
-                        MaterialAlertDialogBuilder(this)
-                            .setTitle(R.string.dialog_permission_path_error_title)
-                            .setMessage(
-                                getString(
-                                    R.string.warning_path_selection_error,
-                                    Constants.MG_DIRECTORY,
-                                    folderPermissionManager.getFileByUri(treeUri)
-                                )
-                            )
-                            .setPositiveButton(R.string.dialog_positive, null)
-                            .show()
-                        hideOptions()
-                        return@let
-                    }
-
-                    contentResolver.takePersistableUriPermission(
-                        treeUri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    )
-
-                    MGDirectoryUri = treeUri
-                    var currentConfig = MGConfig.loadConfig(this)
-                    if (currentConfig == null) {
-                        currentConfig = MGConfig(this)
-                    }
-                    currentConfig.save()
-                    showOptions()
-                } ?: hideOptions()
+    private val manageAllFilesLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (hasMgDirectoryAccess()) {
+                MGConfig(this).save()
+                showOptions()
+            } else {
+                snackbar("授权失败")
+                hideOptions()
             }
         }
 
@@ -177,7 +143,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         }
 
         setContentView(binding.root)
-        folderPermissionManager = FolderPermissionManager(this)
         setSupportActionBar(binding.appBar)
 
         setupSpinners()
@@ -238,8 +203,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     }
 
     private fun hasMgDirectoryAccess(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MGDirectoryUri != null
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
         } else {
             hasLegacyPermissions()
         }
@@ -359,16 +324,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 }
                 checkAndDeleteEmptyDirectory()
 
-                // 5. 移除权限
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && MGDirectoryUri != null) {
-                    withContext(Dispatchers.Main) {
-                        progressText.setText(R.string.removing_permissions)
-                        progressBar.progress = 100
-                    }
-                    releaseSafPermissions()
-                }
-
-                // 6. 操作完成
+                // 5. 操作完成
                 withContext(Dispatchers.Main) {
                     resetApplicationState()
                     progressDialog.dismiss()
@@ -397,20 +353,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
 
     private fun deleteFileIfExists(fileName: String) {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                MGDirectoryUri?.let { uri ->
-                    DocumentFile.fromTreeUri(this, uri)?.findFile(fileName)?.let { file ->
-                        if (file.exists()) DocumentsContract.deleteDocument(
-                            contentResolver,
-                            file.uri
-                        )
-                    }
-                }
-            } else {
-                val file = File(Environment.getExternalStorageDirectory(), "MG/$fileName")
-                if (file.exists()) {
-                    FileUtils.deleteFile(file)
-                }
+            val file = File(Constants.MG_DIRECTORY, fileName)
+            if (file.exists()) {
+                FileUtils.deleteFile(file)
             }
         } catch (e: Exception) {
             Log.w("MG", "删除文件失败: $fileName", e)
@@ -419,43 +364,17 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
 
     private fun checkAndDeleteEmptyDirectory() {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                MGDirectoryUri?.let { uri ->
-                    val dir = DocumentFile.fromTreeUri(this, uri)
-                    if (dir != null && dir.listFiles().isEmpty()) {
-                        DocumentsContract.deleteDocument(contentResolver, dir.uri)
-                    }
-                }
-            } else {
-                val mgDir = File(Environment.getExternalStorageDirectory(), "MG")
-                if (mgDir.exists() && mgDir.isDirectory && mgDir.listFiles()?.isEmpty() == true) {
-                    FileUtils.deleteFile(mgDir)
-                }
+            val mgDir = File(Constants.MG_DIRECTORY)
+            if (mgDir.exists() && mgDir.isDirectory && mgDir.listFiles()?.isEmpty() == true) {
+                FileUtils.deleteFile(mgDir)
             }
         } catch (e: Exception) {
             Log.w("MG", "删除目录失败", e)
         }
     }
 
-    private fun releaseSafPermissions() {
-        try {
-            contentResolver.persistedUriPermissions
-                .filter { it.uri == MGDirectoryUri }
-                .forEach {
-                    contentResolver.releasePersistableUriPermission(
-                        it.uri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    )
-                }
-        } catch (e: Exception) {
-            Log.w("MG", "移除 SAF 权限失败", e)
-        }
-    }
-
     private fun resetApplicationState() {
-        MGDirectoryUri = null
         config = null
-        folderPermissionManager = FolderPermissionManager(this) // Re-initialize
         hideOptions()
     }
 
@@ -541,33 +460,16 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     }
 
     private fun checkPermissionSilently() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MGDirectoryUri = folderPermissionManager.getMGFolderUri()
-            try {
-                val documentFile = DocumentFile.fromTreeUri(this, MGDirectoryUri!!)
-                if (documentFile?.exists() != true) {
-                    MGDirectoryUri = null
-                    hideOptions()
-                    return
-                }
-                (MGConfig.loadConfig(this) ?: MGConfig(this)).save()
-                showOptions()
-            } catch (_: Exception) {
-                // 文件夹被删除或权限失效
-                MGDirectoryUri = null
-                hideOptions()
-            }
+        if (hasMgDirectoryAccess()) {
+            (MGConfig.loadConfig(this) ?: MGConfig(this)).save()
+            showOptions()
         } else {
-            if (hasLegacyPermissions()) {
-                showOptions()
-            } else {
-                hideOptions()
-            }
+            hideOptions()
         }
     }
 
     private fun checkPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.dialog_permission_title))
                 .setMessage(
@@ -577,21 +479,14 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                     )
                 )
                 .setPositiveButton(R.string.dialog_positive) { _, _ ->
-                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                    // 1. 获取外部存储文档提供者的根 URI
-                    val rootUri = DocumentsContract.buildTreeDocumentUri(
-                        "com.android.externalstorage.documents",
-                        "primary" // "primary" 通常代表内部共享存储
-                    )
-
-                    // 2. 在根 URI 的基础上构建指向 "MG" 文件夹的 Document-URI
-                    // Document ID 的格式是 "root:path"
-                    val folderDocumentId = "primary:MG"
-                    val initialUri =
-                        DocumentsContract.buildDocumentUriUsingTree(rootUri, folderDocumentId)
-
-                    intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
-                    safLauncher.launch(intent)
+                    try {
+                        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                        intent.data = Uri.parse("package:$packageName")
+                        manageAllFilesLauncher.launch(intent)
+                    } catch (e: Exception) {
+                        val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                        manageAllFilesLauncher.launch(intent)
+                    }
                 }
                 .setNegativeButton(R.string.dialog_negative) { dialog, _ -> dialog.dismiss() }
                 .show()
@@ -855,25 +750,13 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         val errorColor = MaterialColors.getColor(this, AppcompatR.attr.colorError, Color.RED)
         val messageText = getString(id)
     
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Html.fromHtml(messageText.replace(
-                "@colorError",
-                String.format("#%06X", 0xFFFFFF and errorColor)
-            ), Html.FROM_HTML_MODE_LEGACY)
-        } else {
-            @Suppress("DEPRECATION")
-            Html.fromHtml(messageText.replace(
-                "@colorError",
-                String.format("#%06X", 0xFFFFFF and errorColor)
-            ))
-        }
+        return Html.fromHtml(messageText.replace(
+            "@colorError",
+            String.format("#%06X", 0xFFFFFF and errorColor)
+        ), Html.FROM_HTML_MODE_LEGACY)
     }
 
     fun snackbar(text: CharSequence, duration: Int = Snackbar.LENGTH_SHORT) {
         Snackbar.make(binding.root, text, duration).show()
-    }
-
-    companion object {
-        var MGDirectoryUri: Uri? = null
     }
 }

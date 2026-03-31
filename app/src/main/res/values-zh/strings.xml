@@ -63,8 +63,8 @@
 
     <string name="dialog_permission_title">请前往授权</string>
     <string name="dialog_permission_path_error_title">路径选择错误</string>
-    <string name="dialog_permission_msg">你似乎禁止了 MobileGlues 的授权请求。\n修改配置需要“存储”权限，你必须在授权后才能修改渲染器设置。\n\n请在接下来的页面中找到并授予“存储”权限！</string>
-    <string name="dialog_permission_msg_android_Q">修改渲染选项需要读写权限，请授予读写权限后再修改。\n您稍后需要选择这个目录：\n%s\n若不存在名为 MG 的文件夹，请自行创建名为 MG 的文件夹。</string>
+    <string name="dialog_permission_msg">你似乎禁止了授权请求。修改配置需要“存储”权限，你必须在授权后才能修改渲染器设置。</string>
+    <string name="dialog_permission_msg_android_Q">修改渲染选项需要“所有文件访问权限”，请在接下来的页面中授予此权限以允许应用访问：\n%s</string>
 
     <string name="dialog_title_warning">警告</string>
     <string name="warning_ext_cs_enable">启用不完整的 ARB_compute_shader 扩展可能会导致部分光影、Mods 错误，是否继续？</string>
