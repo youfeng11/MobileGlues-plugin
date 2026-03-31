@@ -53,6 +53,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.sql.Types
 import kotlin.system.exitProcess
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     CompoundButton.OnCheckedChangeListener {
@@ -151,7 +152,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
 
         // 设置约束布局的底边距为系统导航栏的高度
         val optionLayoutParams = binding.optionLayout.layoutParams as ViewGroup.MarginLayoutParams
-        window.decorView.setOnApplyWindowInsetsListener { v, insets ->
+        window.decorView.setOnApplyWindowInsetsListener { _, insets ->
             @Suppress("DEPRECATION")
             optionLayoutParams.setMargins(
                 0,
@@ -481,9 +482,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 .setPositiveButton(R.string.dialog_positive) { _, _ ->
                     try {
                         val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                        intent.data = Uri.parse("package:$packageName")
+                        intent.data = "package:$packageName".toUri()
                         manageAllFilesLauncher.launch(intent)
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
                         manageAllFilesLauncher.launch(intent)
                     }
@@ -645,7 +646,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 .setTitle(getString(R.string.dialog_title_warning))
                 .setMessage(getString(warningMsgRes))
                 .setCancelable(false)
-                .setOnKeyListener { dialog, keyCode, _ -> keyCode == KeyEvent.KEYCODE_BACK }
+                .setOnKeyListener { _, keyCode, _ -> keyCode == KeyEvent.KEYCODE_BACK }
                 .setPositiveButton(getString(R.string.dialog_positive)) { _, _ -> onConfirm() }
                 .setNegativeButton(getString(R.string.dialog_negative)) { _, _ ->
                     button.isChecked = false
