@@ -7,20 +7,8 @@
     android:padding="24dp">
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
-        android:id="@+id/progress_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:indeterminate="false"
-        app:trackColor="?attr/colorSurfaceVariant"
-        app:trackCornerRadius="4dp"
-        app:trackThickness="4dp" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/progress_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        android:textAlignment="center" />
+        android:indeterminate="true" />
 
 </LinearLayout>
