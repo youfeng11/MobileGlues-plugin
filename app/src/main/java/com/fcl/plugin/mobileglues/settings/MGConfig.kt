@@ -98,10 +98,6 @@ class MGConfig private constructor(val context: Context, private var isInitializ
         if (!isInitializing) save()
     }
 
-    fun deleteConfig() {
-        runCatching { File(Constants.CONFIG_FILE_PATH).delete() }
-    }
-
     fun save() {
         runCatching {
             val configFile = File(Constants.CONFIG_FILE_PATH)
@@ -113,7 +109,6 @@ class MGConfig private constructor(val context: Context, private var isInitializ
     fun saveToCachePath() {
         if (cacheConfigPath == null) {
             val cacheDir = context.externalCacheDir ?: context.cacheDir
-            // 保持业务逻辑：必须存储在 MG 文件夹下
             cacheMGDir = File(cacheDir, "MG").apply { mkdirs() }
             cacheConfigPath = File(cacheMGDir, "config.json").absolutePath
         }

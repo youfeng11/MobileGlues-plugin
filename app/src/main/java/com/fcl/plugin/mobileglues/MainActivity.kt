@@ -540,7 +540,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                config?.deleteConfig()
                 File(Constants.MG_DIRECTORY).deleteRecursively()
 
                 withContext(Dispatchers.Main) {
