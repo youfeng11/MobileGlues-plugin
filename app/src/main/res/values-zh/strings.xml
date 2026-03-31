@@ -62,7 +62,7 @@
 
     <string name="dialog_permission_title">请前往授权</string>
     <string name="dialog_permission_msg">你似乎禁止了授权请求。修改配置需要“存储”权限，你必须在授权后才能修改渲染器设置。</string>
-    <string name="dialog_permission_msg_android_Q">修改渲染选项需要“所有文件访问权限”，请在接下来的页面中授予此权限以允许应用访问：\n%s</string>
+    <string name="dialog_permission_msg_android_Q">修改渲染选项需要“所有文件访问权限”，请在接下来的页面中授予此权限以允许应用访问：\n%s\n\n注意：本应用是自由软件，且完全离线运行，无网络访问权限，绝不收集或泄露您的任何个人数据。</string>
 
     <string name="permission_failed">授权失败</string>
 
